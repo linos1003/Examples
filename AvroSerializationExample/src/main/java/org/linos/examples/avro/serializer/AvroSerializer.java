@@ -1,7 +1,10 @@
 package org.linos.examples.avro.serializer;
 
+import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DatumWriter;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.linos.examples.avro.BdPerson;
 
@@ -10,7 +13,7 @@ import java.io.IOException;
 
 public class AvroSerializer {
 
-    public static void main(String ... args){
+    public static void main(String... args) {
         BdPerson p1 = new BdPerson();
         p1.setId(1);
         p1.setUsername("mrscarter");
@@ -31,7 +34,6 @@ public class AvroSerializer {
         p2.setPreviousLogins(20000);
 
 
-
         File avroOutput = new File("bdBdPerson-test.avro");
         try {
             DatumWriter<BdPerson> bdBdPersonDatumWriter = new SpecificDatumWriter<BdPerson>(BdPerson.class);
@@ -40,10 +42,22 @@ public class AvroSerializer {
             dataFileWriter.append(p1);
             dataFileWriter.append(p2);
             dataFileWriter.close();
-        } catch (IOException e) {System.out.println("Error writing Avro");}
-    }
+        } catch (IOException e) {
+            System.out.println("Error writing Avro");
+        }
 
-    
+        try {
+            DatumReader<BdPerson> bdPersonDatumReader = new SpecificDatumReader(BdPerson.class);
+            DataFileReader<BdPerson> dataFileReader = new DataFileReader<BdPerson>(avroOutput, bdPersonDatumReader);
+            BdPerson p = null;
+            while (dataFileReader.hasNext()) {
+                p = dataFileReader.next(p);
+                System.out.println(p);
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading Avro");
+        }
+    }
 
 
 }
